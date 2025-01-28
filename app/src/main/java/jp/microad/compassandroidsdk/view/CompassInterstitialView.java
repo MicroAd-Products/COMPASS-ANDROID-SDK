@@ -47,7 +47,7 @@ public class CompassInterstitialView extends WebView {
                     "            microadCompass.overridingHandler = {\n" +
                     "                onAdLoaded: () => { CompassAndroidSDKInterface.showWebView(); },\n" +
                     "                onClose: () => { CompassAndroidSDKInterface.hideWebView(); },\n" +
-                    "                onRedirect: (url) => { CompassAndroidSDKInterface.openBrowser(url); }\n" +
+                    "                onRedirect: (url) => { CompassAndroidSDKInterface.redirect(url); }\n" +
                     "            };\n" +
                     "            microadCompass.queue.push({\n" +
                     "                \"spot\": \"${COMPASS_SPOT}\",\n" +
@@ -137,7 +137,7 @@ class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void openBrowser(String url) {
+    public void redirect(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         webView.getContext().startActivity(intent);
     }
