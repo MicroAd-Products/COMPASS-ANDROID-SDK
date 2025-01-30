@@ -110,9 +110,7 @@ public class CompassInterstitialView extends WebView {
                 e.printStackTrace();
 
                 if (errorHandler != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        errorHandler.apply("Error occurred: " + e.getMessage());
-                    }
+                    errorHandler.apply("Error occurred: " + e.getMessage());
                 }
             }
         });
