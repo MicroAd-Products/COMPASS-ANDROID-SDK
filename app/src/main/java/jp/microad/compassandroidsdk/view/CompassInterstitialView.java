@@ -46,6 +46,13 @@ public class CompassInterstitialView extends WebView {
         addJavascriptInterface(new WebAppInterface(this), JAVASCRIPT_INTERFACE_NAME);
     }
 
+    /**
+     * TODO: javadoc記述する
+     *
+     * @param spot
+     * @param kvSet
+     * @throws RuntimeException
+     */
     public void load(String spot, KvSet kvSet) throws RuntimeException {
         executorService.execute(() -> {
             try {

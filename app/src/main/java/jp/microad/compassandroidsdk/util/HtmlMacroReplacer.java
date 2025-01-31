@@ -14,6 +14,7 @@ public class HtmlMacroReplacer {
     private static final String HASHED_EMAIL_MACRO = "${COMPASS_EXT_HASHED_EMAIL}";
 
     public String replace(String html, String spot, String ifa, String appId, KvSet kvSet) {
+        if (html == null) return "";
         return html
                 .replace(SPOT_MACRO, spot)
                 .replace(IFA_MACRO, ifa)

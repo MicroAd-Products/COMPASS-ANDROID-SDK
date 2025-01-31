@@ -1,7 +1,5 @@
 package jp.microad.compassandroidsdk.model;
 
-import java.util.Objects;
-
 public class KvSet {
     private final String gender;
     private final String birthday;
