@@ -46,6 +46,14 @@ public class CompassInterstitialView extends WebView {
         addJavascriptInterface(new WebAppInterface(this), JAVASCRIPT_INTERFACE_NAME);
     }
 
+    public CompassInterstitialView(Context context) {
+        this(context, null, 0);
+    }
+
+    public CompassInterstitialView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
     /**
      * TODO: javadoc記述する
      *
