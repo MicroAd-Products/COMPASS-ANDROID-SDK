@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -13,60 +12,22 @@ import android.webkit.WebView;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import jp.microad.compassandroidsdk.model.KvSet;
 import jp.microad.compassandroidsdk.util.HtmlMacroReplacer;
+import jp.microad.compassandroidsdk.util.WebContentFetcher;
 
 public class CompassInterstitialView extends WebView {
 
-    // TODO: HTMLはCDNに配置してhttpsで取得するようにする
-    private static final String htmlContent =
-            "<!DOCTYPE html>\n" +
-                    "<html lang=\"ja\">\n" +
-                    "<head>\n" +
-                    "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n" +
-                    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0\">\n" +
-                    "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\">\n" +
-                    "    <meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\">\n" +
-                    "    <title></title>\n" +
-                    "    <script type=\"text/javascript\">\n" +
-                    "        var microadCompass = microadCompass || {};\n" +
-                    "        microadCompass.queue = microadCompass.queue || [];\n" +
-                    "        microadCompass.isSkipTrackers = true;\n" +
-                    "    </script>\n" +
-                    "    <script type=\"text/javascript\" charset=\"UTF-8\" src=\"https://j.microad.net/js/compass.js\" " +
-                    "onload=\"new microadCompass.AdInitializer().initialize();\" async></script>\n" +
-                    "</head>\n" +
-                    "\n" +
-                    "<body>\n" +
-                    "    <div id=\"${COMPASS_SPOT}\">\n" +
-                    "        <script type=\"text/javascript\">\n" +
-                    "            microadCompass.overridingHandler = {\n" +
-                    "                onAdLoaded: () => { CompassAndroidSDKInterface.showWebView(); },\n" +
-                    "                onClose: () => { CompassAndroidSDKInterface.hideWebView(); },\n" +
-                    "                onRedirect: (url) => { CompassAndroidSDKInterface.redirect(url); }\n" +
-                    "            };\n" +
-                    "            microadCompass.queue.push({\n" +
-                    "                \"spot\": \"${COMPASS_SPOT}\",\n" +
-                    "                \"ifa\": \"${COMPASS_EXT_IFA}\",\n" +
-                    "                \"appid\": \"${COMPASS_EXT_APPID}\",\n" +
-                    "                \"kv_set\": {\n" +
-                    "                    \"gender\": \"${COMPASS_EXT_GENDER}\",\n" +
-                    "                    \"birthday\": \"${COMPASS_EXT_BIRTHDAY}\",\n" +
-                    "                    \"age\": \"${COMPASS_EXT_AGE}\",\n" +
-                    "                    \"postal_code\": \"${COMPASS_EXT_POSTALCODE}\",\n" +
-                    "                    \"email\": \"${COMPASS_EXT_EMAIL}\",\n" +
-                    "                    \"hashed_email\": \"${COMPASS_EXT_HASHED_EMAIL}\"\n" +
-                    "                }\n" +
-                    "            });\n" +
-                    "        </script>\n" +
-                    "    </div>\n" +
-                    "</body>\n" +
-                    "</html>";
-
+    private static final String HTML_URL = "https://cdn.microad.jp/compass-sdk/android/interstitial_ad.html";
+    private static final String JAVASCRIPT_INTERFACE_NAME = "CompassAndroidSDKInterface";
 
     private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -75,31 +36,43 @@ public class CompassInterstitialView extends WebView {
         super(context, attrs, defStyleAttr);
 
         final WebSettings settings = getSettings();
-        settings.setJavaScriptEnabled(true); // JavaScriptを有効化
-        settings.setDomStorageEnabled(true); // DOM Storage有効化
-        settings.setAllowFileAccess(true); // ファイルアクセスを許可
-        settings.setAllowContentAccess(true); // コンテンツアクセスを許可
-        settings.setJavaScriptCanOpenWindowsAutomatically(true); // JavaScriptで新しいウィンドウを開く許可
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
         setBackgroundColor(0x00000000);
         setVisibility(View.GONE);
 
-        addJavascriptInterface(new WebAppInterface(this), "CompassAndroidSDKInterface");
+        addJavascriptInterface(new WebAppInterface(this), JAVASCRIPT_INTERFACE_NAME);
     }
 
     public void load(String spot, KvSet kvSet, Function<String, Void> errorHandler) {
         executorService.execute(() -> {
             try {
+                // Advertising IDを取得
                 AdvertisingIdClient.Info adInfo = AdvertisingIdClient.getAdvertisingIdInfo(getContext());
                 String ifa = adInfo != null ? adInfo.getId() : "";
 
-                // TODO: Bunble IDを取得する処理を記述する
-                String appId = "";
+                // Bundle IDを取得する（現在は未実装）
+                String appId = getContext().getPackageName();
 
+                // HTMLを取得
+                String htmlContent = new WebContentFetcher().fetchContent(HTML_URL);
+
+                if (htmlContent == null) {
+                    if (errorHandler != null) {
+                        errorHandler.apply("Error: Failed to fetch HTML from server.");
+                    }
+                    return;
+                }
+
+                // プレースホルダーを置換
                 String replacedHtml = new HtmlMacroReplacer().replace(htmlContent, spot, ifa, appId, kvSet);
 
                 post(() -> loadDataWithBaseURL(
-                        "https://cdn.microad.jp/compass-sdk/android/interstitial_ad.html",
+                        HTML_URL,
                         replacedHtml,
                         "text/html",
                         "utf-8",
@@ -108,12 +81,40 @@ public class CompassInterstitialView extends WebView {
 
             } catch (Exception e) {
                 e.printStackTrace();
-
                 if (errorHandler != null) {
-                    errorHandler.apply("Error occurred: " + e.getMessage());
+                    errorHandler.apply("Error: " + e.getMessage());
                 }
             }
         });
+    }
+
+    private String fetchHtmlFromServer() {
+        try {
+            URL url = new URL(HTML_URL);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                return null;
+            }
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line).append("\n");
+            }
+            reader.close();
+            connection.disconnect();
+
+            return response.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
 
