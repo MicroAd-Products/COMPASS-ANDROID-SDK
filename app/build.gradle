@@ -4,16 +4,13 @@ plugins {
 
 android {
     namespace 'jp.microad.compassandroidsdk'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
-        applicationId "jp.microad.compassandroidsdk"
         minSdk 21
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
@@ -29,10 +26,8 @@ android {
 }
 
 dependencies {
-
     implementation libs.appcompat
     implementation libs.adsidentifier
+    implementation libs.kotlin.stdlib
     testImplementation libs.junit
-
-
 }

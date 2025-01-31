@@ -11,14 +11,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
 
 import jp.microad.compassandroidsdk.model.KvSet;
 import jp.microad.compassandroidsdk.util.HtmlMacroReplacer;
@@ -48,27 +46,19 @@ public class CompassInterstitialView extends WebView {
         addJavascriptInterface(new WebAppInterface(this), JAVASCRIPT_INTERFACE_NAME);
     }
 
-    public void load(String spot, KvSet kvSet, Function<String, Void> errorHandler) {
+    public void load(String spot, KvSet kvSet) throws RuntimeException {
         executorService.execute(() -> {
             try {
                 // Advertising IDを取得
                 AdvertisingIdClient.Info adInfo = AdvertisingIdClient.getAdvertisingIdInfo(getContext());
                 String ifa = adInfo != null ? adInfo.getId() : "";
 
-                // Bundle IDを取得する（現在は未実装）
+                // Bundle IDを取得する
                 String appId = getContext().getPackageName();
 
                 // HTMLを取得
                 String htmlContent = new WebContentFetcher().fetchContent(HTML_URL);
 
-                if (htmlContent == null) {
-                    if (errorHandler != null) {
-                        errorHandler.apply("Error: Failed to fetch HTML from server.");
-                    }
-                    return;
-                }
-
-                // プレースホルダーを置換
                 String replacedHtml = new HtmlMacroReplacer().replace(htmlContent, spot, ifa, appId, kvSet);
 
                 post(() -> loadDataWithBaseURL(
@@ -78,43 +68,11 @@ public class CompassInterstitialView extends WebView {
                         "utf-8",
                         null
                 ));
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (errorHandler != null) {
-                    errorHandler.apply("Error: " + e.getMessage());
-                }
+            } catch (IOException | GooglePlayServicesNotAvailableException |
+                     GooglePlayServicesRepairableException ex) {
+                throw new RuntimeException(ex);
             }
         });
-    }
-
-    private String fetchHtmlFromServer() {
-        try {
-            URL url = new URL(HTML_URL);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                return null;
-            }
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line).append("\n");
-            }
-            reader.close();
-            connection.disconnect();
-
-            return response.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }
 
