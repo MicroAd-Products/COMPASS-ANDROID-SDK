@@ -51,7 +51,7 @@ public class CompassInterstitialView extends WebView {
             try {
                 // Advertising IDを取得
                 AdvertisingIdClient.Info adInfo = AdvertisingIdClient.getAdvertisingIdInfo(getContext());
-                String ifa = adInfo != null ? adInfo.getId() : "";
+                String ifa = adInfo.getId();
 
                 // Bundle IDを取得する
                 String appId = getContext().getPackageName();
