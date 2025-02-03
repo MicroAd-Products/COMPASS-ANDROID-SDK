@@ -61,11 +61,11 @@ public class CompassInterstitialView extends FrameLayout {
     }
 
     /**
-     * TODO: javadoc記述する
+     * CompassInterstitialView内にインタースティシャル広告を表示する
      *
-     * @param spot
-     * @param kvSet
-     * @throws RuntimeException
+     * @param spot  事前にお渡しした広告枠ID (spot id)
+     * @param kvSet ターゲットユーザのKV情報
+     * @throws RuntimeException 広告表示処理中に例外が発生した場合
      */
     public void load(String spot, KvSet kvSet) throws RuntimeException {
         executorService.execute(() -> {

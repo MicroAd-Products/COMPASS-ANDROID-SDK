@@ -2,6 +2,9 @@ package jp.microad.compassandroidsdk.util;
 
 import jp.microad.compassandroidsdk.model.KvSet;
 
+/**
+ * HTMLのマクロ文字列を置換するクラス
+ */
 public class HtmlMacroReplacer {
     private static final String SPOT_MACRO = "${COMPASS_SPOT}";
     private static final String IFA_MACRO = "${COMPASS_EXT_IFA}";

@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Webコンテンツを取得するクラス
+ */
 public class WebContentFetcher {
     public String fetchContent(String urlString) throws IOException {
         URL url = new URL(urlString);
