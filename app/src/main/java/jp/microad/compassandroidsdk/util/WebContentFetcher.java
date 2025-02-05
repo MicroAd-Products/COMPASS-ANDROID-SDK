@@ -17,20 +17,21 @@ public class WebContentFetcher {
         connection.setConnectTimeout(5000);
         connection.setReadTimeout(5000);
 
+        // レスポンスコードが200 (OK) でない場合、例外を投げて異常を通知する
         int responseCode = connection.getResponseCode();
         if (responseCode != HttpURLConnection.HTTP_OK) {
-            return null;
+            throw new IOException("Unexpected HTTP response code: " + responseCode);
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line).append("\n");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line).append("\n");
+            }
+            return response.toString().trim();
+        } finally {
+            connection.disconnect();
         }
-        reader.close();
-        connection.disconnect();
-
-        return response.toString();
     }
 }
