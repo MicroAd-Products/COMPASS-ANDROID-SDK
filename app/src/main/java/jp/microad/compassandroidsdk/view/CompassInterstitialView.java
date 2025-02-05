@@ -39,7 +39,7 @@ public class CompassInterstitialView extends FrameLayout {
         View.inflate(context, R.layout.view_compass_interstitial, this);
 
         adWebView = findViewById(R.id.ad_webview);
-        setVisibility(View.VISIBLE);
+        setVisibility(View.GONE);
         setBackgroundColor(0x00000000);
 
         final WebSettings settings = adWebView.getSettings();
