@@ -121,7 +121,6 @@ class WebAppInterface {
     public void showWebView() {
         rootView.post(() -> {
             rootView.setVisibility(View.VISIBLE);
-            rootView.setBackgroundColor(0x00000000);
         });
     }
 
