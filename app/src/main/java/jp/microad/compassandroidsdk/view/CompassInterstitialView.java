@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 
 import jp.microad.compassandroidsdk.R;
 import jp.microad.compassandroidsdk.model.KvSet;
+import jp.microad.compassandroidsdk.model.LoadCallback;
 import jp.microad.compassandroidsdk.util.HtmlMacroReplacer;
 import jp.microad.compassandroidsdk.util.WebContentFetcher;
 
@@ -102,12 +103,6 @@ public class CompassInterstitialView extends FrameLayout {
             }
         });
     }
-}
-
-interface LoadCallback {
-    void onSuccess();
-
-    void onError(Exception e);
 }
 
 class WebAppInterface {
