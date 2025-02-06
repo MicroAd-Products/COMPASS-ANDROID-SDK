@@ -63,11 +63,11 @@ public class CompassInterstitialView extends FrameLayout {
     /**
      * CompassInterstitialView内にインタースティシャル広告を表示する
      *
-     * @param spot  事前にお渡しした広告枠ID (spot id)
-     * @param kvSet ターゲットユーザのKV情報
-     * @throws RuntimeException 広告表示処理中に例外が発生した場合
+     * @param spot     事前にお渡しした広告枠ID (spot id)
+     * @param kvSet    ターゲットユーザのKV情報
+     * @param callback 広告のロード成功・失敗を通知するコールバック
      */
-    public void load(String spot, KvSet kvSet) throws RuntimeException {
+    public void load(String spot, KvSet kvSet, LoadCallback callback) {
         executorService.execute(() -> {
             try {
                 // Advertising IDを取得
@@ -82,19 +82,32 @@ public class CompassInterstitialView extends FrameLayout {
 
                 String replacedHtml = new HtmlMacroReplacer().replace(htmlContent, spot, ifa, appId, kvSet);
 
-                post(() -> adWebView.loadDataWithBaseURL(
-                        HTML_URL,
-                        replacedHtml,
-                        "text/html; charset=utf-8",
-                        "utf-8",
-                        null
-                ));
+                post(() -> {
+                    adWebView.loadDataWithBaseURL(
+                            HTML_URL,
+                            replacedHtml,
+                            "text/html; charset=utf-8",
+                            "utf-8",
+                            null
+                    );
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                });
             } catch (IOException | GooglePlayServicesNotAvailableException |
                      GooglePlayServicesRepairableException ex) {
-                throw new RuntimeException(ex);
+                if (callback != null) {
+                    post(() -> callback.onError(ex));
+                }
             }
         });
     }
+}
+
+interface LoadCallback {
+    void onSuccess();
+
+    void onError(Exception e);
 }
 
 class WebAppInterface {
@@ -106,12 +119,15 @@ class WebAppInterface {
 
     @JavascriptInterface
     public void showWebView() {
-        rootView.setVisibility(View.VISIBLE);
+        rootView.post(() -> {
+            rootView.setVisibility(View.VISIBLE);
+            rootView.setBackgroundColor(0x00000000);
+        });
     }
 
     @JavascriptInterface
     public void hideWebView() {
-        rootView.setVisibility(View.GONE);
+        rootView.post(() -> rootView.setVisibility(View.GONE));
     }
 
     @JavascriptInterface
