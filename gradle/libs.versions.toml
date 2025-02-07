@@ -2,12 +2,10 @@
 android-plugin = "8.6.1"
 junit = "4.0"
 ads-identifier = "15.0.0"
-annotations = "24.0.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 adsidentifier = { group = "com.google.android.gms", name = "play-services-ads-identifier", version.ref = "ads-identifier" }
-annotations = { module = "org.jetbrains:annotations", version.ref = "annotations" }
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "android-plugin" }

@@ -28,5 +28,4 @@ android {
 dependencies {
     implementation libs.adsidentifier
     testImplementation libs.junit
-    implementation libs.annotations
 }
