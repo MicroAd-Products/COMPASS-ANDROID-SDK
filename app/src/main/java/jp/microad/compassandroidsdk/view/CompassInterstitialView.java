@@ -11,6 +11,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -68,7 +70,7 @@ public class CompassInterstitialView extends FrameLayout {
      * @param kvSet    ターゲットユーザのKV情報
      * @param callback 広告のロード成功・失敗を通知するコールバック
      */
-    public void load(String spot, KvSet kvSet, LoadCallback callback) {
+    public void load(@NonNull String spot, @NonNull KvSet kvSet, @NonNull LoadCallback callback) {
         executorService.execute(() -> {
             try {
                 // Advertising IDを取得

@@ -26,8 +26,7 @@ android {
 }
 
 dependencies {
-    implementation libs.appcompat
     implementation libs.adsidentifier
-    implementation libs.kotlin.stdlib
     testImplementation libs.junit
+    implementation libs.annotations
 }
