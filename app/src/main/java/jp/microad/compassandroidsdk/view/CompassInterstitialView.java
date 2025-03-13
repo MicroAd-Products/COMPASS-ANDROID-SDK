@@ -40,9 +40,11 @@ public class CompassInterstitialView extends FrameLayout {
         super(context, attrs, defStyleAttr);
         View.inflate(context, R.layout.view_compass_interstitial, this);
 
-        adWebView = findViewById(R.id.ad_webview);
         setVisibility(View.GONE);
-        setBackgroundColor(0x00000000);
+
+        adWebView = findViewById(R.id.ad_webview);
+        adWebView.setBackgroundColor(0x00000000);
+        adWebView.addJavascriptInterface(new WebAppInterface(this), JAVASCRIPT_INTERFACE_NAME);
 
         final WebSettings settings = adWebView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -50,8 +52,6 @@ public class CompassInterstitialView extends FrameLayout {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
-
-        adWebView.addJavascriptInterface(new WebAppInterface(this), JAVASCRIPT_INTERFACE_NAME);
     }
 
     public CompassInterstitialView(Context context) {

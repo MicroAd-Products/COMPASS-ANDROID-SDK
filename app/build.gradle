@@ -20,6 +20,7 @@ android {
         }
     }
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -28,4 +29,5 @@ android {
 dependencies {
     implementation libs.adsidentifier
     testImplementation libs.junit
+    coreLibraryDesugaring libs.desugar.jdk.libs
 }
