@@ -1,5 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
+    id("maven-publish")
+    id("cl.franciscosolis.sonatype-central-upload") version "1.0.2"
+    id("signing")
 }
 
 android {
@@ -24,10 +27,61 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
     implementation libs.adsidentifier
     testImplementation libs.junit
     coreLibraryDesugaring libs.desugar.jdk.libs
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            register<MavenPublication>("maven") {
+                groupId = project.group as String
+                artifactId = "library"
+                version = project.version as String
+                from(components["release"])
+                artifact(tasks["javadocEmptyJar"])
+
+                pom {
+                    name = "COMPASS Android SDK"
+                    description = "COMPASS Android SDK is an Android framework developed and maintained by MicroAd, Inc. for displaying advertisements in native applications."
+                    url = "https://github.com/MicroAd-Products/COMPASS-ANDROID-SDK"
+                    licenses {
+                        license {
+                            name = "COMPASS Android SDK License"
+                            url = "https://github.com/MicroAd-Products/COMPASS-ANDROID-SDK/blob/main/LICENSE.md"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "microad.co.jp"
+                            name = "microad"
+                            email = "sys-dev-google@microad.co.jp"
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:https://github.com/MicroAd-Products/COMPASS-ANDROID-SDK.git"
+                        developerConnection = "scm:git:ssh://github.com/MicroAd-Products/COMPASS-ANDROID-SDK.git"
+                        url = "https://github.com/MicroAd-Products/COMPASS-ANDROID-SDK"
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                url = uri(layout.buildDirectory.dir("repos"))
+            }
+        }
+    }
+    signing {
+        sign(publishing.publications["maven"])
+    }
 }
