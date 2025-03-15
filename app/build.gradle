@@ -34,23 +34,36 @@ android {
     }
 }
 
+android.libraryVariants.all { variant ->
+    if (variant.buildType.name == "release") {
+        variant.outputs.all { output ->
+            output.outputFileName = "${rootProject.name.toLowerCase()}-${project.version}.aar"
+        }
+    }
+}
+
 dependencies {
     implementation libs.adsidentifier
     testImplementation libs.junit
     coreLibraryDesugaring libs.desugar.jdk.libs
 }
 
+task javadocEmptyJar(type: Jar) {
+    archiveClassifier = 'javadoc'
+}
+
 afterEvaluate {
     publishing {
         publications {
-            register<MavenPublication>("maven") {
+            maven(MavenPublication) {
                 groupId = project.group as String
-                artifactId = "library"
+                artifactId = rootProject.name.toLowerCase()
                 version = project.version as String
                 from(components["release"])
                 artifact(tasks["javadocEmptyJar"])
 
                 pom {
+                    packaging = "aar"
                     name = "COMPASS Android SDK"
                     description = "COMPASS Android SDK is an Android framework developed and maintained by MicroAd, Inc. for displaying advertisements in native applications."
                     url = "https://github.com/MicroAd-Products/COMPASS-ANDROID-SDK"
@@ -81,7 +94,25 @@ afterEvaluate {
             }
         }
     }
+    sonatypeCentralUpload {
+        dependsOn(tasks.generatePomFileForMavenPublication)
+        archives = files("$buildDir/outputs/aar/${rootProject.name.toLowerCase()}-${project.version}.aar")
+        username = project.findProperty("ossrhUsername") ?: ""
+        password = project.findProperty("ossrhPassword") ?: ""
+        pom = tasks.generatePomFileForMavenPublication.outputs.files.singleFile
+
+        signingKey = System.getenv("PGP_SIGNING_KEY")
+        signingKeyPassphrase = System.getenv("PGP_SIGNING_KEY_PASSPHRASE")
+    }
     signing {
+        def signingKey = System.getenv("PGP_SIGNING_KEY")
+        def signingPassword = System.getenv("PGP_SIGNING_KEY_PASSPHRASE")
+        if (signingKey && signingPassword) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        } else {
+            throw new GradleException("PGP_SIGNING_KEY and PGP_SIGNING_KEY_PASSPHRASE must be set")
+        }
+        required = true
         sign(publishing.publications["maven"])
     }
 }

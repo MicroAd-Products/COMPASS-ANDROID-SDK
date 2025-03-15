@@ -19,5 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "COMPASS Android SDK"
+rootProject.name = "COMPASS-Android-SDK"
 include ':app'
+project(":app").name = "COMPASS-Android-SDK"
+
